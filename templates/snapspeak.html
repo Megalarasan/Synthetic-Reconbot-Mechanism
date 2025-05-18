@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNAPSPEAK_AI - Image Analysis Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #7FFFD4;
+            --secondary-color: #40E0D0;
+            --bg-color: #111111;
+            --text-color: #E0FFFF;
+            --accent-color: #1a1a1a;
+            --card-bg: #222222;
+            --hover-color: #48D1CC;
+            --error-color: #ff6b6b;
+            --success-color: #7FFFD4;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(180deg, rgba(127, 255, 212, 0.1) 0%, rgba(17, 17, 17, 0) 100%);
+            border-radius: 15px;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin: 0 0 1rem 0;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            margin: 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .upload-section {
+            background-color: var(--accent-color);
+            border-radius: 15px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            box-shadow: 0 4px 15px rgba(127, 255, 212, 0.1);
+        }
+
+        .custom-file-upload, #analyzeBtn {
+            background-color: var(--secondary-color);
+            color: var(--bg-color);
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .custom-file-upload:hover, #analyzeBtn:hover {
+            background-color: var(--hover-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(127, 255, 212, 0.2);
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            flex: 1;
+        }
+
+        .image-preview {
+            background-color: var(--accent-color);
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            box-shadow: 0 4px 15px rgba(127, 255, 212, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(127, 255, 212, 0.1);
+            position: relative;
+            padding: 1rem;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+            background-color: var(--accent-color);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(127, 255, 212, 0.1);
+        }
+
+        .loading-bar-container {
+            background-color: rgba(127, 255, 212, 0.1);
+            border-radius: 4px;
+            height: 6px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .loading-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .results-section {
+            background-color: var(--accent-color);
+            border-radius: 15px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            box-shadow: 0 4px 15px rgba(127, 255, 212, 0.1);
+        }
+
+        .result-item {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(127, 255, 212, 0.1);
+        }
+
+        .result-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(127, 255, 212, 0.15);
+            border-color: rgba(127, 255, 212, 0.3);
+        }
+
+        .result-title {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(127, 255, 212, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .result-content {
+            margin-bottom: 1rem;
+        }
+
+        .result-description {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(127, 255, 212, 0.1);
+        }
+
+        .confidence-meter {
+            background-color: rgba(127, 255, 212, 0.1);
+            border-radius: 4px;
+            height: 24px;
+            margin: 1.5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confidence-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .confidence-text {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .color-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--accent-color);
+            border-radius: 8px;
+        }
+
+        .color-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 2px solid rgba(127, 255, 212, 0.2);
+            flex-shrink: 0;
+        }
+
+        .color-details {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .metadata-container {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 1rem;
+            margin: 1rem 0;
+        }
+
+        .metadata-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .metadata-container::-webkit-scrollbar-track {
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        .metadata-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .metadata-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(127, 255, 212, 0.1);
+        }
+
+        .metadata-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .face-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .face-box {
+            position: absolute;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 10px rgba(127, 255, 212, 0.3);
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        .processing-error {
+            color: var(--error-color);
+            background-color: rgba(255, 107, 107, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .upload-section {
+                flex-direction: column;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .color-details {
+                grid-template-columns: 1fr;
+            }
+        }
+        .color-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.color-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background-color: var(--accent-color);
+    padding: 1rem;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+}
+
+.color-info:hover {
+    transform: translateY(-2px);
+}
+
+.color-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    border: 2px solid rgba(127, 255, 212, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-details {
+    flex-grow: 1;
+}
+
+.color-value {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.face-detection-info {
+    padding: 1rem;
+    background-color: var(--accent-color);
+    border-radius: 8px;
+}
+
+.face-detail {
+    margin: 0.8rem 0;
+    padding: 0.8rem;
+    background-color: var(--card-bg);
+    border-radius: 6px;
+}
+
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SNAPSPEAK_AI</h1>
+            <p class="tagline">Uncover the hidden stories in your images</p>
+        </header>
+        <div class="upload-section">
+            <label for="imageInput" class="custom-file-upload">
+                <i class="fas fa-upload"></i> Choose Image
+            </label>
+            <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+            <button id="analyzeBtn" onclick="analyzeImage()">
+                <i class="fas fa-search"></i> Analyze Image
+            </button>
+        </div>
+        <div class="content-area">
+            <div class="image-preview" id="imagePreview"></div>
+            <div class="loading">
+                <div class="loading-bar-container">
+                    <div class="loading-bar" id="loadingBar"></div>
+                </div>
+                <p class="loading-text" id="loadingText"></p>
+            </div>
+            <div class="results-section" id="resultsSection"></div>
+        </div>
+    </div>
+
+    <script>
+       // Global variables for state management
+let currentImage = null;
+let analysisInProgress = false;
+
+// Constants
+const LOADING_MESSAGES = [
+    "Initializing analysis...",
+    "Processing image data...",
+    "Analyzing visual elements...",
+    "Detecting faces...",
+    "Analyzing color patterns...",
+    "Extracting metadata...",
+    "Generating image caption...",
+    "Checking for hidden content...",
+    "Finalizing results..."
+];
+
+const LOADING_INTERVALS = {
+    messageUpdate: 1500,
+    progressUpdate: 100
+};
+
+// Utility Functions
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+function getFileExtension(filename) {
+    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
+}
+
+// Image Preview Handling
+function previewImage(event) {
+    const imagePreview = document.getElementById('imagePreview');
+    const file = event.target.files[0];
+    
+    if (!file) return;
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+        return;
+    }
+    
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+        alert('File size exceeds 10MB limit');
+        return;
+    }
+    
+    currentImage = file;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        imagePreview.innerHTML = `
+            <div class="face-container">
+                <img src="${e.target.result}" alt="Preview" id="previewImage">
+            </div>
+            <div class="image-info">
+                <p>File: ${file.name}</p>
+                <p>Size: ${formatBytes(file.size)}</p>
+                <p>Type: ${file.type}</p>
+            </div>`;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Loading Animation Management
+function updateLoadingProgress(startTime, totalEstimatedTime) {
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    const elapsedTime = Date.now() - startTime;
+    const progress = Math.min((elapsedTime / totalEstimatedTime) * 100, 95);
+    
+    loadingBar.style.width = `${progress}%`;
+    const messageIndex = Math.floor((progress / 95) * (LOADING_MESSAGES.length - 1));
+    loadingText.innerText = LOADING_MESSAGES[messageIndex];
+    
+    return progress < 95;
+}
+
+// Results Display Functions
+function displayFaceDetection(faceData, imageElement) {
+    if (!faceData || !faceData.locations || !imageElement) return;
+
+    const container = imageElement.parentElement;
+    const existingBoxes = container.querySelectorAll('.face-box');
+    existingBoxes.forEach(box => box.remove());
+
+    const scaleX = imageElement.clientWidth / imageElement.naturalWidth;
+    const scaleY = imageElement.clientHeight / imageElement.naturalHeight;
+
+    faceData.locations.forEach(face => {
+        const box = document.createElement('div');
+        box.className = 'face-box';
+        
+        const scaledX = face.x * scaleX;
+        const scaledY = face.y * scaleY;
+        const scaledWidth = face.width * scaleX;
+        const scaledHeight = face.height * scaleY;
+
+        Object.assign(box.style, {
+            left: `${scaledX}px`,
+            top: `${scaledY}px`,
+            width: `${scaledWidth}px`,
+            height: `${scaledHeight}px`
+        });
+
+        if (face.confidence) {
+            box.setAttribute('title', `Confidence: ${(face.confidence * 100).toFixed(1)}%`);
+        }
+
+        container.appendChild(box);
+    });
+}
+
+function displayColorAnalysis(colors) {
+    if (!colors || !colors.length) return '';
+    
+    return `
+        <div class="color-palette">
+            ${colors.map(color => `
+                <div class="color-info">
+                    <div class="color-box" style="background-color: ${color.hex}"></div>
+                    <div class="color-details">
+                        <div class="color-value"><strong>HEX:</strong> ${color.hex}</div>
+                        <div class="color-value"><strong>RGB:</strong> ${color.rgb}</div>
+                        <div class="color-value"><strong>Percentage:</strong> ${color.percentage}%</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function displaySteganographyResults(stegData) {
+    if (!stegData) return '';
+    
+    const confidence = stegData.confidence || 0;
+    const detectionStatus = stegData.detected ? 
+        `<span style="color: var(--error-color);">Detected</span>` : 
+        `<span style="color: var(--success-color);">Not Detected</span>`;
+    
+    return `
+        <div class="steg-analysis">
+            <p><strong>Hidden Content:</strong> ${detectionStatus}</p>
+            <div class="confidence-meter">
+                <div class="confidence-bar" style="width: ${confidence}%; 
+                    background-color: ${confidence > 70 ? 'var(--error-color)' : 'var(--success-color)'}">
+                </div>
+                <span class="confidence-text">Confidence: ${confidence.toFixed(1)}%</span>
+            </div>
+            ${stegData.methods?.length > 0 ? `
+                <p><strong>Detection Methods:</strong> ${stegData.methods.join(", ")}</p>
+            ` : ''}
+            ${stegData.hidden_pixels ? `
+                <p><strong>Hidden Pixels Found:</strong> ${stegData.hidden_pixels}</p>
+            ` : ''}
+        </div>
+    `;
+}
+
+// Main Analysis Function
+async function analyzeImage() {
+    if (analysisInProgress) return;
+    
+    const fileInput = document.getElementById('imageInput');
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.querySelector('.loading');
+    
+    if (!currentImage) {
+        alert("Please select an image first.");
+        return;
+    }
+    
+    analysisInProgress = true;
+    resultsSection.innerHTML = "";
+    loadingDiv.style.display = "block";
+    
+    const startTime = Date.now();
+    const totalEstimatedTime = 15000; // 15 seconds estimated processing time
+    
+    const progressInterval = setInterval(() => {
+        const shouldContinue = updateLoadingProgress(startTime, totalEstimatedTime);
+        if (!shouldContinue) clearInterval(progressInterval);
+    }, LOADING_INTERVALS.progressUpdate);
+
+    try {
+        const formData = new FormData();
+        formData.append('file', currentImage);
+
+        const response = await fetch('/snapspeak_ai/api/analyze/', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`Analysis failed: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        // Complete loading animation
+        clearInterval(progressInterval);
+        document.getElementById('loadingBar').style.width = '100%';
+        document.getElementById('loadingText').innerText = "Analysis complete!";
+        
+        // Display results after a short delay
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+            displayResults(result);
+            
+            // Update face boxes if faces were detected
+            if (result.faces && result.faces.locations) {
+                const imageElement = document.getElementById('previewImage');
+                displayFaceDetection(result.faces, imageElement);
+            }
+        }, 500);
+
+    } catch (error) {
+        clearInterval(progressInterval);
+        loadingDiv.style.display = "none";
+        resultsSection.innerHTML = `
+            <div class="result-item">
+                <div class="result-title">Error</div>
+                <div class="result-content processing-error">
+                    <i class="fas fa-exclamation-triangle"></i> ${error.message}
+                </div>
+            </div>`;
+        console.error('Analysis error:', error);
+    } finally {
+        analysisInProgress = false;
+    }
+}
+
+// Results Display Management
+function displayResults(result) {
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.innerHTML = "";
+
+    // Image Caption
+    if (result.caption) {
+        addResultItem(
+            resultsSection,
+            "Image Caption",
+            `<p>${result.caption}</p>`,
+            "AI-generated description of the image content."
+        );
+    }
+
+    // Face Detection Results
+    if (result.faces && result.faces.count > 0) {
+        const faceContent = `
+            <p><strong>Faces Detected:</strong> ${result.faces.count}</p>
+            <div class="face-detection-info">
+                ${result.faces.locations.map((face, index) => `
+                    <div class="face-detail">
+                        <p>Face ${index + 1}</p>
+                        <p>Confidence: ${(face.confidence * 100).toFixed(1)}%</p>
+                        <p>Detector: ${face.detector}</p>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        addResultItem(
+            resultsSection,
+            "Face Detection",
+            faceContent,
+            "Analysis of detected faces in the image."
+        );
+    }
+
+    // Steganography Analysis
+    if (result.steganography) {
+        addResultItem(
+            resultsSection,
+            "Hidden Content Analysis",
+            displaySteganographyResults(result.steganography),
+            "Analysis for potential hidden messages or data within the image."
+        );
+    }
+
+    // Color Analysis
+    if (result.dominant_colors && result.dominant_colors.length > 0) {
+        addResultItem(
+            resultsSection,
+            "Color Analysis",
+            displayColorAnalysis(result.dominant_colors),
+            "Breakdown of the dominant colors present in the image."
+        );
+    }
+
+    // Metadata
+    if (result.metadata && Object.keys(result.metadata).length > 0) {
+        addResultItem(
+            resultsSection,
+            "Technical Metadata",
+            `<div class="metadata-container">${formatMetadata(result.metadata)}</div>`,
+            "Technical information embedded in the image file."
+        );
+    }
+
+    // Image Hash
+    if (result.image_hash) {
+        addResultItem(
+            resultsSection,
+            "Image Fingerprint",
+            `<div class="hash-info">
+                <p><strong>Perceptual Hash:</strong> <code>${result.image_hash}</code></p>
+                ${result.sha256_digest ? `
+                    <p><strong>SHA-256:</strong> <code>${result.sha256_digest}</code></p>
+                ` : ''}
+            </div>`,
+            "Unique identifiers generated from the image content."
+        );
+    }
+
+    // Processing Time
+    if (result.processing_time) {
+        addResultItem(
+            resultsSection,
+            "Analysis Performance",
+            `<i class="fas fa-clock"></i> ${result.processing_time.toFixed(2)} seconds`,
+            "Total time taken to complete the image analysis."
+        );
+    }
+}
+
+// Utility function to format metadata
+function formatMetadata(metadata) {
+    if (!metadata || Object.keys(metadata).length === 0) {
+        return "No metadata found.";
+    }
+
+    return Object.entries(metadata)
+        .map(([key, value]) => {
+            const formattedValue = typeof value === 'object' ? 
+                `<pre>${JSON.stringify(value, null, 2)}</pre>` : 
+                value;
+            return `
+                <div class="metadata-item">
+                    <strong>${key}:</strong> 
+                    <span>${formattedValue}</span>
+                </div>
+            `;
+        }).join('');
+}
+
+// Utility function to add result items
+function addResultItem(parent, title, content, description) {
+    const item = document.createElement("div");
+    item.className = "result-item";
+    item.innerHTML = `
+        <div class="result-title">${title}</div>
+        <div class="result-content">${content}</div>
+        ${description ? `<div class="result-description">${description}</div>` : ''}
+    `;
+    parent.appendChild(item);
+}
+
+// Event Listeners
+window.addEventListener('load', () => {
+    document.getElementById('imageInput').addEventListener('change', previewImage);
+    document.getElementById('analyzeBtn').addEventListener('click', analyzeImage);
+});
+
+// Handle window resize for face boxes
+window.addEventListener('resize', () => {
+    const imageElement = document.getElementById('previewImage');
+    const faces = document.querySelector('.results-section [data-faces]');
+    if (faces && imageElement) {
+        displayFaceDetection(JSON.parse(faces.dataset.faces), imageElement);
+    }
+});
+    </script>
+</body>
+</html>

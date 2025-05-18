@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSentry AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient-start: #356c5a;
+            --bg-gradient-end: #1a2f28;
+            --chat-bg: rgba(0, 0, 0, 0.85);
+            --message-ai: rgba(53, 108, 90, 0.4);
+            --message-user: #81ffd5;
+            --accent: #ccffee;
+            --text-primary: #ffffff;
+            --text-secondary: #ccffee;
+            --button-gradient: linear-gradient(135deg, #81ffd5, #76eec6);
+            --safe-color: #4CAF50;
+            --neutral-color: #FFC107;
+            --danger-color: #F44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 2800px;
+            height: 85vh;
+            background: var(--chat-bg);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 2px solid rgba(129, 255, 213, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .chat-header {
+            padding: 1.8rem 2.5rem;
+            background: linear-gradient(90deg, rgba(53, 108, 90, 0.9), rgba(69, 139, 116, 0.9));
+            border-radius: 28px 28px 0 0;
+            border-bottom: 2px solid rgba(129, 255, 213, 0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-shadow: 0 0 15px rgba(204, 255, 238, 0.3);
+        }
+
+        .logo img {
+            height: 40px;
+            width: 40px;
+        }
+
+        #chat-messages {
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            max-width: 80%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: var(--message-ai);
+            border: 1px solid rgba(129, 255, 213, 0.3);
+            color: var(--text-primary);
+            font-size: 1.15rem;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--message-user);
+            color: #000000;
+            font-weight: 500;
+            font-size: 1.15rem;
+        }
+        
+        /* Improved formatting for message content */
+        .message-heading {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(129, 255, 213, 0.3);
+            padding-bottom: 0.5rem;
+        }
+        
+        .message-content {
+            padding-left: 0.5rem;
+        }
+        
+        .message-sender {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Security level colors */
+        .security-safe {
+            color: var(--safe-color);
+            font-weight: 600;
+        }
+        
+        .security-neutral {
+            color: var(--neutral-color);
+            font-weight: 600;
+        }
+        
+        .security-danger {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .chat-input-container {
+            padding: 2rem 2.5rem;
+            background: rgba(53, 108, 90, 0.2);
+            border-top: 2px solid rgba(129, 255, 213, 0.3);
+            border-radius: 0 0 28px 28px;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 1.5rem 2rem;
+            font-size: 1.1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(129, 255, 213, 0.3);
+            border-radius: 15px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: var(--message-user);
+            box-shadow: 0 0 20px rgba(129, 255, 213, 0.2);
+        }
+
+        #send-button {
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: var(--button-gradient);
+            border: none;
+            border-radius: 15px;
+            color: #000000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        #send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(129, 255, 213, 0.4);
+        }
+        
+        /* Terminal output styling */
+        .terminal-output {
+            background: rgba(0, 0, 0, 0.7);
+            color: #E0E0E0;
+            padding: 1.5rem;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            margin-top: 1rem;
+            border: 1px solid rgba(129, 255, 213, 0.2);
+            align-self: stretch;
+            overflow-x: auto;
+            max-width: 95%;
+        }
+        
+        .terminal-title {
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(129, 255, 213, 0.3);
+            padding-bottom: 0.3rem;
+        }
+
+        /* Custom Scrollbar */
+        #chat-messages::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(129, 255, 213, 0.3);
+            border-radius: 5px;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(129, 255, 213, 0.5);
+        }
+
+        /* Message Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            align-self: flex-start;
+            background: var(--message-ai);
+            border: 1px solid rgba(129, 255, 213, 0.3);
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .typing-dot {
+            height: 10px;
+            width: 10px;
+            margin: 0 4px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="logo">
+                <span class="logo-emoji">🛡️</span>
+                CyberSentry AI
+            </div>
+        </div>
+        <div id="chat-messages"></div>
+        <div class="chat-input-container">
+            <input type="text" id="user-input" placeholder="Type your security question..." autocomplete="off">
+            <button id="send-button">
+                Send
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function formatContent(content) {
+                // Format security level indicators with appropriate colors
+                content = content.replace(/\[SAFE\]/g, '<span class="security-safe">[SAFE]</span>');
+                content = content.replace(/\[NEUTRAL\]/g, '<span class="security-neutral">[NEUTRAL]</span>');
+                content = content.replace(/\[DANGER\]/g, '<span class="security-danger">[DANGER]</span>');
+                
+                // Replace ** with proper bold formatting
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Format headings and definitions
+                const lines = content.split('\n');
+                let formattedContent = '';
+                let inDefinition = false;
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    
+                    if (line.startsWith('# ')) {
+                        // Heading
+                        if (inDefinition) {
+                            formattedContent += '</div>'; // Close previous definition
+                            inDefinition = false;
+                        }
+                        formattedContent += `<div class="message-heading">${line.substring(2)}</div>`;
+                        
+                        // Start definition div after heading
+                        formattedContent += '<div class="message-content">';
+                        inDefinition = true;
+                    } else if (line) {
+                        // Regular content
+                        formattedContent += line + '<br>';
+                    } else {
+                        // Empty line
+                        formattedContent += '<br>';
+                    }
+                }
+                
+                if (inDefinition) {
+                    formattedContent += '</div>'; // Close the last definition
+                }
+                
+                return formattedContent;
+            }
+
+            function addMessage(content, isUser = false, terminalOutput = '') {
+                const formattedContent = isUser ? content : formatContent(content);
+                
+                const messageDiv = $('<div></div>')
+                    .addClass(`message ${isUser ? 'user-message' : 'ai-message'}`)
+                    .html(`<span class="message-sender">${isUser ? 'You' : 'CyberSentry AI'}:</span>${formattedContent}`);
+                
+                $('#chat-messages').append(messageDiv);
+
+                if (terminalOutput && terminalOutput.trim() !== '') {
+                    const terminalDiv = $('<div></div>')
+                        .addClass('terminal-output')
+                        .html(`<div class="terminal-title">Terminal Output</div>${terminalOutput.replace(/\n/g, '<br>')}`);
+                    $('#chat-messages').append(terminalDiv);
+                }
+
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }
+
+            function showTypingIndicator() {
+                const indicator = $('<div class="typing-indicator"></div>')
+                    .append('<div class="typing-dot"></div>')
+                    .append('<div class="typing-dot"></div>')
+                    .append('<div class="typing-dot"></div>');
+                $('#chat-messages').append(indicator);
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+                return indicator;
+            }
+
+            function sendMessage() {
+                const userInput = $('#user-input').val().trim();
+                if (!userInput) return;
+
+                addMessage(userInput, true);
+                $('#user-input').val('');
+                const typingIndicator = showTypingIndicator();
+
+                $.ajax({
+                    url: '/cybersentry_ai/ask',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ question: userInput }),
+                    success: function(response) {
+                        typingIndicator.remove();
+                        addMessage(response.answer, false, response.terminal_output);
+                    },
+                    error: function(xhr, status, error) {
+                        typingIndicator.remove();
+                        addMessage(`# Error\nSorry, I encountered a problem: ${error}`, false);
+                    }
+                });
+            }
+
+            $('#send-button').click(sendMessage);
+            $('#user-input').keypress(function(e) {
+                if (e.which == 13) sendMessage();
+            });
+
+            // Welcome message
+            setTimeout(() => {
+                addMessage("# Welcome to CyberSentry AI\nI'm your cybersecurity assistant. How can I help protect your digital assets today? 🔒");
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
