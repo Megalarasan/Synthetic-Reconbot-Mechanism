@@ -142,15 +142,6 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 
 ---
 
-## 📧 Contact
-For any questions or support, feel free to reach out:
-- **Name**: Lakshan
-- **Email**: infosightrecon@gmail.com
-- **GitHub**: [itslaks](https://github.com/itslaks)
-- **Instagram**: lakshan_sj
-
----
-
 ## 🏆 Acknowledgements
 Special thanks to:
 - The open-source community for inspiring this project.
